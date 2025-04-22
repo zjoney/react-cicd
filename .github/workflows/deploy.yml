@@ -2,7 +2,7 @@ name: Deploy React App to S3
 
 on:
   push:
-    branches: ["main"]  # 仅监听 main 分支的推送
+    branches: ["dev"]  # 仅监听 dev 分支的推送
 
 jobs:
   build-and-deploy:
