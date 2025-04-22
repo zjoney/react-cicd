@@ -1,0 +1,42 @@
+name: Deploy React App to S3
+
+on:
+  push:
+    branches: ["main"]  # 仅监听 main 分支的推送
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 检出代码
+      - uses: actions/checkout@v4
+
+      # 2. 安装 Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # 3. 安装依赖并运行测试
+      - name: Install and Test
+        run: |
+          npm install
+          npm run test  # 如果测试失败，流程会终止
+
+      # 4. 构建生产包
+      - name: Build
+        run: |
+          npm run build
+
+      # 5. 配置 AWS 凭证
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 6. 同步到 S3 桶（启用静态网站托管需提前配置 S3）
+      - name: Deploy to S3
+        run: |
+          aws s3 sync ./build s3://${{ secrets.S3_BUCKET_NAME }} --delete
